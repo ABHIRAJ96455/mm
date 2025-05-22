@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Movie Portal</title>
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #222;
+    }
+
+    .top-bar h2 {
+      color: orange;
+      margin: 0;
+    }
+
+    .top-bar button {
+      background-color: orange;
+      color: black;
+      padding: 6px 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Category Filter Bar */
+    .category-bar {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      padding: 10px 0;
+      background-color: #222;
+      overflow-x: auto;
+    }
+
+    .category-btn {
+      background: none;
+      border: 1.5px solid orange;
+      color: orange;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      white-space: nowrap;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .category-btn:hover {
+      background-color: orange;
+      color: black;
+    }
+
+    .category-btn.active {
+      background-color: orange;
+      color: black;
+    }
+
+    .search-section {
+      display: none;
+      padding: 20px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 80%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 40px 10px 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      cursor: pointer;
+      color: orange;
+    }
+
+    .movie-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .movie {
+      width: 200px;
+    }
+
+    .movie img {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    .movie-title {
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .back-button {
+      background: none;
+      border: none;
+      color: orange;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <h2>Movie Portal</h2>
+    <button onclick="showSearch()">Search</button>
+  </div>
+
+  <!-- Category Filter Bar -->
+  <div class="category-bar" id="categoryBar">
+    <button class="category-btn active" data-category="All">All</button>
+    <button class="category-btn" data-category="Hindi">Hindi</button>
+    <button class="category-btn" data-category="English">English</button>
+    <button class="category-btn" data-category="Urdu">Urdu</button>
+    <button class="category-btn" data-category="Bollywood">Bollywood</button>
+    <button class="category-btn" data-category="South">South</button>
+    <button class="category-btn" data-category="Punjabi">Punjabi</button>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section" id="searchSection">
+    <button class="back-button" onclick="hideSearch()">← Back</button>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search movies..." />
+      <span class="search-icon" onclick="searchMovies()">🔍</span>
+    </div>
+  </div>
+
+  <!-- Movie List -->
+  <div class="movie-container" id="movieContainer"></div>
+
+  <script>
+    const movieContainer = document.getElementById("movieContainer");
+    const searchSection = document.getElementById("searchSection");
+    const searchInput = document.getElementById("searchInput");
+    const categoryBar = document.getElementById("categoryBar");
+    const categoryButtons = document.querySelectorAll(".category-btn");
+
+    // Movies data with category field
+    const moviesData = [
+      {
+        title: "JANA NAYAGAN",
+        img: "https://i.ytimg.com/vi/ryutkf-KfH8/hq720.jpg",
+        link: "https://youtu.be/NyYlmlchKE0?si=bwdTBHJCztWPBexh",
+        category: "South"
+      },
+      {
+        title: "THRI",
+        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi4PsEBaIIyaZvjQqACg9S-Nvsd5JRr-UkrQ&s",
+        link: "https://youtu.be/9rq87EQAPt0?si=_ylkKo4Vdgyga4dt",
+        category: "South"
+      },
+      {
+        title: "Ramcharan's Jaat",
+        img: "https://i.ytimg.com/vi/OaWkGdTvHIU/hq720.jpg",
+        link: "https://youtu.be/3hcG0qfKuog?si=sMvb4sxIHvAwTe4g",
+        category: "South"
+      },
+      {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+      {
+        title: "Romeo",
+        img: "https://i.ytimg.com/vi/lHJrIxL0C0c/maxresdefault.jpg",
+        link: "https://youtu.be/lHJrIxL0C0c?si=QMttQCWq7T3wiy29",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },   {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },   {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },   {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },   {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+   {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+         {
+        title: "smart lover",
+        img: "https://i.ytimg.com/vi/Kg6gd1jUYmQ/maxresdefault.jpg",
+        link: "https://youtu.be/Kg6gd1jUYmQ?si=eAZ0NjFdXUAVG1Es",
+        category: "South"
+      },
+
+    ];
+
+    function displayMovies(movies) {
+      movieContainer.innerHTML = '';
+      if (movies.length === 0) {
+        movieContainer.innerHTML = '<p style="color:orange; font-weight:bold;">No movies found.</p>';
+        return;
+      }
+      movies.forEach(movie => {
+        const url = `dow1pej.html?title=${encodeURIComponent(movie.title)}&img=${encodeURIComponent(movie.img)}&link=${encodeURIComponent(movie.link)}`;
+        const div = document.createElement('div');
+        div.className = 'movie';
+        div.innerHTML = `
+          <a href="${url}">
+            <img src="${movie.img}" alt="${movie.title}" />
+            <div class="movie-title">${movie.title}</div>
+          </a>
+        `;
+        movieContainer.appendChild(div);
+      });
+    }
+
+    function showSearch() {
+      searchSection.style.display = "block";
+      movieContainer.style.display = "none";
+      categoryBar.style.display = "none";
+    }
+
+    function hideSearch() {
+      searchSection.style.display = "none";
+      movieContainer.style.display = "flex";
+      categoryBar.style.display = "flex";
+      displayMovies(moviesData);
+      searchInput.value = "";
+      // Reset category to All on hiding search
+      categoryButtons.forEach(btn => btn.classList.remove("active"));
+      categoryButtons[0].classList.add("active");
+    }
+
+    function searchMovies() {
+      const query = searchInput.value.toLowerCase();
+      const filtered = moviesData.filter(movie =>
+        movie.title.toLowerCase().includes(query)
+      );
+      displayMovies(filtered);
+    }
+
+    // Press enter to search
+    searchInput.addEventListener("keyup", e => {
+      if (e.key === "Enter") searchMovies();
+    });
+
+    // Category filter logic
+    categoryBar.addEventListener("click", (e) => {
+      if (e.target.classList.contains("category-btn")) {
+        categoryButtons.forEach(btn => btn.classList.remove("active"));
+        e.target.classList.add("active");
+
+        const selectedCategory = e.target.getAttribute("data-category");
+
+        if (selectedCategory === "All") {
+          displayMovies(moviesData);
+        } else {
+          const filteredMovies = moviesData.filter(movie => movie.category === selectedCategory);
+          displayMovies(filteredMovies);
+        }
+
+        // If search is open, hide it and clear search input
+        if (searchSection.style.display === "block") {
+          hideSearch();
+        }
+      }
+    });
+
+    // Initial display
+    displayMovies(moviesData);
+  </script>
+</body>
+</html>
