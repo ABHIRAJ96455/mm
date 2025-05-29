@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smooth Video Player</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .video-wrapper {
+      position: relative;
+      width: 90%;
+      max-width: 900px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 12px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+      overflow: hidden;
+    }
+    .poster-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 12px;
+    }
+    .play-button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 80px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+    }
+    .play-button:hover {
+      background: rgba(0,0,0,0.8);
+    }
+    .play-button::before {
+      content: '';
+      width: 0;
+      height: 0;
+      border-left: 30px solid white;
+      border-top: 18px solid transparent;
+      border-bottom: 18px solid transparent;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      display: none;
+      border-radius: 12px;
+      background: black;
+    }
+    .spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      z-index: 3;
+      display: none;
+    }
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+  </style>
+</head>
+<body oncontextmenu="return false">
+
+  <div class="video-wrapper" id="videoContainer">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrnI2o_5Eoao7cGbqZne03ATGjZy4w5VlrgA&s" alt="Poster" class="poster-image" id="poster" />
+    <div class="spinner" id="spinner"></div>
+    <div class="play-button" id="playBtn"></div>
+    <video id="videoPlayer" controls playsinline preload="auto" controlsList="nodownload" disablePictureInPicture>
+      <source id="videoSource" src="" type="video/mp4" />
+      Your browser does not support HTML5 video.
+    </video>
+  </div>
+
+  <script>
+    const video = document.getElementById('videoPlayer');
+    const poster = document.getElementById('poster');
+    const playBtn = document.getElementById('playBtn');
+    const container = document.getElementById('videoContainer');
+    const videoSource = document.getElementById('videoSource');
+    const spinner = document.getElementById('spinner');
+
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return decodeURIComponent(url.searchParams.get(name) || '');
+    }
+
+    const videoURL = getParam('video');
+    if (videoURL) {
+      videoSource.src = videoURL;
+      video.load();
+    }
+
+    container.addEventListener('click', () => {
+      spinner.style.display = 'block';
+      video.style.display = 'block';
+      poster.style.display = 'none';
+      playBtn.style.display = 'none';
+      video.play();
+    });
+
+    video.addEventListener('canplay', () => {
+      spinner.style.display = 'none';
+    });
+
+    video.addEventListener('error', () => {
+      alert("⚠️ Failed to load video. Check your link.");
+      spinner.style.display = 'none';
+    });
+  </script>
+
+</body>
+</html>
